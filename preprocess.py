@@ -12,11 +12,11 @@ import multiprocessing as mp
 NUM_JOBS = 8
 #  resized output size, can be 128 or 256
 IMG_SIZE = 256
-INPUT_DATA_DIR = '/path_to_imgs/'
-OUTPUT_DATA_DIR = '/output_folder/'
+INPUT_DATA_DIR = '/data/hdchoi00/GAN-tutorial/data/MRI_400/'
+OUTPUT_DATA_DIR = '/data/hdchoi00/GAN-tutorial/HA-GAN/data/'
 # the intensity range is clipped with the two thresholds, this default is used for our CT images, please adapt to your own dataset
-LOW_THRESHOLD = -1024
-HIGH_THRESHOLD = 600
+LOW_THRESHOLD = 0.0
+HIGH_THRESHOLD = 255.0
 # suffix (ext.) of input images
 SUFFIX = '.nii.gz'
 # whether or not to trim blank axial slices, recommend to set as True
@@ -52,10 +52,9 @@ def batch_resize(batch_idx, img_list):
             # skip images that already finished pre-processing
             continue
         try:
-            img = sitk.ReadImage(INPUT_DATA_DIR + img_list[idx])
+            img = sitk.ReadImage(INPUT_DATA_DIR + imgname)
         except Exception as e: 
             # skip corrupted images
-            print(e)
             print("Image loading error:", imgname)
             continue 
         img = sitk.GetArrayFromImage(img)

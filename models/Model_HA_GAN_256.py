@@ -110,7 +110,7 @@ class Discriminator(nn.Module):
         self.conv5 = SNConv3d(channel//4, channel//2, kernel_size=(2,4,4), stride=(2,2,2), padding=(0,1,1)) # out:[1,8,8,8]
         self.conv6 = SNConv3d(channel//2, channel, kernel_size=(1,4,4), stride=(1,2,2), padding=(0,1,1)) # out:[1,4,4,4]
         self.conv7 = SNConv3d(channel, channel//4, kernel_size=(1,4,4), stride=1, padding=0) # out:[1,1,1,1]
-        self.fc1 = SNLinear(channel//4+1, channel//8)
+        self.fc1 = SNLinear(channel//2, channel//8)
         self.fc2 = SNLinear(channel//8, 1)
         if num_class>0:
             self.fc2_class = SNLinear(channel//8, num_class)
@@ -119,6 +119,8 @@ class Discriminator(nn.Module):
         self.sub_D = Sub_Discriminator(num_class)
 
     def forward(self, h, h_small, crop_idx):
+        # h.shape: torch.Size([4, 1, 32, 256, 256])
+        # h_small.shape: torch.Size([4, 1, 64, 64, 64])
         h = F.leaky_relu(self.conv1(h), negative_slope=0.2)
         h = F.leaky_relu(self.conv2(h), negative_slope=0.2)
         h = F.leaky_relu(self.conv3(h), negative_slope=0.2)
@@ -126,7 +128,7 @@ class Discriminator(nn.Module):
         h = F.leaky_relu(self.conv5(h), negative_slope=0.2)
         h = F.leaky_relu(self.conv6(h), negative_slope=0.2)
         h = F.leaky_relu(self.conv7(h), negative_slope=0.2).squeeze()
-        h = torch.cat([h, (crop_idx / 224. * torch.ones((h.size(0), 1))).cuda()], 1) # 256*7/8
+        h = torch.cat([h, (crop_idx / 224. * torch.ones((h.size(0), 1)).squeeze(1)).cuda()], dim=0) # 256*7/8
         h = F.leaky_relu(self.fc1(h), negative_slope=0.2)
         h_logit = self.fc2(h)
         if self.num_class>0:

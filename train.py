@@ -34,11 +34,11 @@ parser.add_argument('--workers', default=8, type=int,
                     help='number of data loading workers (default: 8)')
 parser.add_argument('--img-size', default=256, type=int,
                     help='size of training images (default: 256, can be 128 or 256)')
-parser.add_argument('--num-iter', default=80000, type=int,
+parser.add_argument('--num-iter', default=160000, type=int,
                     help='number of iteration for training (default: 80000)')
-parser.add_argument('--log-iter', default=20, type=int,
+parser.add_argument('--log-iter', default=8000, type=int,
                     help='number of iteration between logging (default: 20)')
-parser.add_argument('--continue-iter', default=0, type=int,
+parser.add_argument('--continue-iter', default=80000, type=int,
                     help='continue from a ckeckpoint that has run for n iteration  (0 if a new run)')
 parser.add_argument('--latent-dim', default=1024, type=int,
                     help='size of the input latent variable')
@@ -77,7 +77,7 @@ def main():
     elif args.img_size == 128:
         from models.Model_HA_GAN_128 import Discriminator, Generator, Encoder, Sub_Encoder
     else:
-        raise NotImplmentedError
+        raise NotImplementedError
         
     G = Generator(mode='train', latent_dim=args.latent_dim, num_class=args.num_class).cuda()
     D = Discriminator(num_class=args.num_class).cuda()
@@ -285,7 +285,7 @@ def main():
         ###############################################
         # Visualization with Tensorboard
         ###############################################
-        if iteration%200 == 0:
+        if iteration%8000 == 0:
             print('[{}/{}]'.format(iteration,args.num_iter),
                   'D_real: {:<8.3}'.format(d_real_loss.item()),
                   'D_fake: {:<8.3}'.format(d_fake_loss.item()), 
@@ -311,7 +311,7 @@ def main():
             plotting.plot_img(featmask,title="FAKE",cut_coords=(args.img_size//2,args.img_size//2,args.img_size//16),figure=fig,draw_cross=False,cmap="gray")
             summary_writer.add_figure('Fake', fig, iteration, close=True)
             
-        if iteration > 30000 and (iteration+1)%500 == 0:
+        if iteration > 70000 and (iteration+1)%8000 == 0:
             torch.save({'model':G.state_dict(), 'optimizer':g_optimizer.state_dict()},'./checkpoint/'+args.exp_name+'/G_iter'+str(iteration+1)+'.pth')
             torch.save({'model':D.state_dict(), 'optimizer':d_optimizer.state_dict()},'./checkpoint/'+args.exp_name+'/D_iter'+str(iteration+1)+'.pth')
             torch.save({'model':E.state_dict(), 'optimizer':e_optimizer.state_dict()},'./checkpoint/'+args.exp_name+'/E_iter'+str(iteration+1)+'.pth')
